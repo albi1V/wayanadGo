@@ -1,0 +1,50 @@
+# ==========================================
+# Environment variables and secrets
+# ==========================================
+.env
+.env.*
+!.env.example
+**/secrets.json
+**/appsettings.*.local.json
+
+# ==========================================
+# Node.js and Angular frontend
+# ==========================================
+**/node_modules/
+**/.angular/
+**/dist/
+**/coverage/
+**/.sass-cache/
+
+# ==========================================
+# .NET / ASP.NET Core backend
+# ==========================================
+**/bin/
+**/obj/
+**/TestResults/
+**/publish/
+
+# ==========================================
+# Python (if used by project tools)
+# ==========================================
+**/__pycache__/
+**/*.py[cod]
+**/.venv/
+**/venv/
+
+# ==========================================
+# IDE and operating system files
+# ==========================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# Logs and temporary files
+# ==========================================
+*.log
+*.tmp
+*.bak
+**/.git-backup/

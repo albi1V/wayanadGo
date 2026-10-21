@@ -1,0 +1,123 @@
+<section class="home-page">
+  <header class="home-header">
+    <a
+      class="brand home-brand"
+      routerLink="/"
+      aria-label="Back to Wayanad Go landing page"
+    >
+      <span class="mini-logo">▲</span>
+      <span class="brand-text">
+        <strong>Wayanad Go</strong>
+        <small>Explore · Plan · Experience</small>
+      </span>
+    </a>
+
+    <div class="header-actions">
+      <button class="language-button" type="button">EN</button>
+      <button class="profile-button" type="button" aria-label="Profile">♟</button>
+    </div>
+  </header>
+
+  <section class="home-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="eyebrow">FIND YOUR NEXT ADVENTURE</p>
+      <h1>Where to in<br />Wayanad today?</h1>
+      <p>
+        Discover breathtaking destinations,<br class="desktop-break" />
+        plan your trip and create unforgettable<br class="desktop-break" />
+        memories.
+      </p>
+    </div>
+  </section>
+
+  <div class="home-content">
+    <form class="search-bar" (submit)="$event.preventDefault()">
+      <span class="search-icon">⌕</span>
+      <input
+        type="search"
+        placeholder="Search spots, treks, stays..."
+        aria-label="Search destinations"
+      />
+      <button type="button" class="filter-button" aria-label="Filters">⚷</button>
+    </form>
+
+    <div class="quick-filters">
+      <button class="filter-chip active" type="button">Monsoon</button>
+      <button class="filter-chip" type="button">Family</button>
+      <button class="filter-chip" type="button">&lt; 20 km</button>
+      <button class="filter-chip" type="button">2 Days</button>
+    </div>
+
+    <section class="content-section">
+      <div class="section-heading">
+        <h2>Explore by category</h2>
+        <button type="button" class="see-all">See all</button>
+      </div>
+
+      <div class="category-grid">
+        <button class="category-card" type="button">
+          <span class="category-icon">♧</span>
+          <strong>Trekking</strong>
+          <small>38 spots</small>
+        </button>
+        <button class="category-card" type="button">
+          <span class="category-icon">♜</span>
+          <strong>Waterfalls</strong>
+          <small>24 spots</small>
+        </button>
+        <button class="category-card" type="button">
+          <span class="category-icon">⌂</span>
+          <strong>Resorts</strong>
+          <small>61 stays</small>
+        </button>
+        <button class="category-card" type="button">
+          <span class="category-icon">♙</span>
+          <strong>Culture</strong>
+          <small>17 spots</small>
+        </button>
+      </div>
+    </section>
+
+    <section class="content-section packages-section">
+      <div class="section-heading">
+        <h2>Popular packages</h2>
+        <button type="button" class="see-all">See all</button>
+      </div>
+
+      <article class="package-card">
+        <div class="package-image">
+          <span class="reel-tag">▶ REEL 0:30</span>
+          <button class="favorite-button" type="button" aria-label="Add to favorites">♡</button>
+        </div>
+
+        <div class="package-details">
+          <h3>2-Day Wayanad<br />Weekend Adventure</h3>
+          <p class="package-rating">★ <strong>4.7</strong> (1,284) · 2D / 1N</p>
+          <div class="package-footer">
+            <p>From <strong>₹6,499</strong> per person</p>
+            <button class="view-button" type="button">View →</button>
+          </div>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <button class="nav-item selected" type="button">
+      <span>⌂</span><small>Home</small>
+    </button>
+    <button class="nav-item" type="button">
+      <span>♧</span><small>Map</small>
+    </button>
+    <button class="nav-item" type="button">
+      <span>⊕</span><small>Plan</small>
+    </button>
+    <button class="nav-item" type="button">
+      <span>▤</span><small>Trips</small>
+    </button>
+    <button class="nav-item" type="button">
+      <span>♙</span><small>Me</small>
+    </button>
+  </nav>
+</section>

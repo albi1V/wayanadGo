@@ -1,0 +1,48 @@
+<section
+  class="landing-page"
+  (touchstart)="onTouchStart($event)"
+  (touchend)="onTouchEnd($event)"
+>
+  <div class="landing-shade"></div>
+
+  <header class="landing-brand">
+    <div class="brand-mark" aria-label="Wayanad Go logo">
+      <svg viewBox="0 0 100 58" aria-hidden="true">
+        <path d="M3 48 32 12 51 35 64 20 97 48Z" fill="currentColor" />
+        <path
+          d="m32 12 9 12-8 0 8 8"
+          fill="none"
+          stroke="#dff4e7"
+          stroke-width="4"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+    <h1>Wayanad Go</h1>
+    <p>Explore <span>•</span> Plan <span>•</span> Experience</p>
+  </header>
+
+  <div class="landing-content">
+    <div class="landing-copy">
+      <p class="eyebrow">YOUR NEXT ESCAPE STARTS HERE</p>
+      <h2>Discover<br />Wayanad</h2>
+      <p class="landing-description">
+        Nature, Adventure and<br />
+        Unforgettable Experiences
+      </p>
+    </div>
+
+    <button
+      class="swipe-button"
+      type="button"
+      aria-label="Explore Wayanad"
+      routerLink="/home"
+    >
+      <span>⌃</span>
+    </button>
+
+    <button class="swipe-label" type="button" routerLink="/home">
+      Swipe up to explore
+    </button>
+  </div>
+</section>
