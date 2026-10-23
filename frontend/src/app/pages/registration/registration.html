@@ -1,0 +1,253 @@
+
+<div class="registration-page">
+  <div class="registration-container">
+
+    <!-- Left: Travel branding -->
+    <section class="brand-panel">
+      <a routerLink="/" class="brand-logo">
+        <span class="logo-icon">W</span>
+        <span>Wayanad<span class="brand-highlight">Go</span></span>
+      </a>
+
+      <div class="brand-content">
+        <span class="eyebrow">YOUR NEXT ADVENTURE</span>
+
+        <h1>Discover the beauty of Wayanad.</h1>
+
+        <p>
+          Create your account and get ready to explore misty mountains,
+          peaceful forests, waterfalls and unforgettable experiences.
+        </p>
+
+        <div class="destination-tags">
+          <span>🌿 Nature</span>
+          <span>⛰️ Mountains</span>
+          <span>💧 Waterfalls</span>
+        </div>
+      </div>
+
+      <div class="brand-footer">
+        Your journey begins here.
+      </div>
+    </section>
+
+    <!-- Right: Registration form -->
+    <section class="form-panel">
+      <div class="mobile-logo">
+        <a routerLink="/" class="brand-logo">
+          <span class="logo-icon">W</span>
+          <span>Wayanad<span class="brand-highlight">Go</span></span>
+        </a>
+      </div>
+
+      <div class="form-heading">
+        <span class="step-label">
+          {{ stage === 'details' ? 'STEP 1 OF 2' : 'STEP 2 OF 2' }}
+        </span>
+
+        <h2>
+          {{ stage === 'details' ? 'Create your account' : 'Verify your email' }}
+        </h2>
+
+        <p *ngIf="stage === 'details'">
+          Join Wayanad Go and start planning your next adventure.
+        </p>
+
+        <p *ngIf="stage === 'otp'">
+          Enter the six-digit OTP sent to
+          <strong>{{ email }}</strong>.
+        </p>
+      </div>
+
+      <!-- Feedback messages -->
+      <div *ngIf="errorMessage" class="feedback error-message" role="alert">
+        <span>!</span>
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="successMessage" class="feedback success-message" role="status">
+        <span>✓</span>
+        {{ successMessage }}
+      </div>
+
+      <!-- Registration details -->
+      <form
+        *ngIf="stage === 'details'"
+        (ngSubmit)="requestOtp()"
+        class="registration-form"
+        novalidate
+      >
+        <div class="form-group">
+          <label for="fullName">Full name</label>
+
+          <input
+            id="fullName"
+            type="text"
+            name="fullName"
+            [(ngModel)]="fullName"
+            placeholder="Enter your full name"
+            autocomplete="name"
+            required
+            [disabled]="loading"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email address</label>
+
+          <input
+            id="email"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+            [disabled]="loading"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+
+          <div class="password-wrapper">
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              name="password"
+              [(ngModel)]="password"
+              placeholder="At least 8 characters"
+              autocomplete="new-password"
+              required
+              [disabled]="loading"
+            />
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="showPassword = !showPassword"
+              [disabled]="loading"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            >
+              {{ showPassword ? 'Hide' : 'Show' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm password</label>
+
+          <div class="password-wrapper">
+            <input
+              id="confirmPassword"
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              name="confirmPassword"
+              [(ngModel)]="confirmPassword"
+              placeholder="Re-enter your password"
+              autocomplete="new-password"
+              required
+              [disabled]="loading"
+            />
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="showConfirmPassword = !showConfirmPassword"
+              [disabled]="loading"
+              [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'"
+            >
+              {{ showConfirmPassword ? 'Hide' : 'Show' }}
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="loading"
+        >
+          <span *ngIf="!loading">Create account <span>→</span></span>
+          <span *ngIf="loading" class="button-loading">Please wait...</span>
+        </button>
+      </form>
+
+      <!-- OTP verification -->
+      <form
+        *ngIf="stage === 'otp'"
+        (ngSubmit)="verifyOtp()"
+        class="registration-form"
+        novalidate
+      >
+        <div class="otp-icon">✉</div>
+
+        <div class="form-group">
+          <label for="otp">Six-digit verification code</label>
+
+          <input
+            id="otp"
+            type="text"
+            name="otp"
+            [(ngModel)]="otp"
+            placeholder="000000"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="6"
+            required
+            [disabled]="loading"
+            class="otp-input"
+          />
+        </div>
+
+        <div class="otp-timer">
+          <span *ngIf="otpSecondsRemaining > 0">
+            Code expires in <strong>{{ formattedTime }}</strong>
+          </span>
+
+          <span *ngIf="otpSecondsRemaining === 0" class="expired-text">
+            Your OTP may have expired.
+          </span>
+        </div>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="loading"
+        >
+          <span *ngIf="!loading">Verify email <span>→</span></span>
+          <span *ngIf="loading" class="button-loading">Verifying...</span>
+        </button>
+
+        <button
+          type="button"
+          class="text-button"
+          (click)="resendOtp()"
+          [disabled]="loading"
+        >
+          Didn't receive the code? Resend OTP
+        </button>
+
+        <button
+          type="button"
+          class="back-button"
+          (click)="backToDetails()"
+          [disabled]="loading"
+        >
+          ← Back to registration
+        </button>
+      </form>
+
+      <div class="form-bottom" *ngIf="stage === 'details'">
+        <p>
+          Already have an account?
+          <a routerLink="/login">Log in</a>
+        </p>
+      </div>
+
+      <div class="security-note">
+        <span>🔒</span>
+        Your information is protected.
+      </div>
+    </section>
+
+  </div>
+</div>

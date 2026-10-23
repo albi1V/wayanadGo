@@ -48,3 +48,6 @@ desktop.ini
 *.tmp
 *.bak
 **/.git-backup/
+
+# Local backups created by backend scaffold script
+backend/_scaffold-backup-*/

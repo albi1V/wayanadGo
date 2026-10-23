@@ -1,0 +1,101 @@
+
+<div class="auth-page">
+  <a routerLink="/home" class="brand" aria-label="Back to Wayanad Go home">
+    <span class="brand-logo">▲</span>
+    <span class="brand-text">
+      <strong>Wayanad Go</strong>
+      <small>Explore · Plan · Experience</small>
+    </span>
+  </a>
+
+  <main class="login-layout">
+    <section class="welcome-panel">
+      <div class="welcome-content">
+        <span class="eyebrow">YOUR NEXT ADVENTURE STARTS HERE</span>
+        <h1>Discover more.<br />Experience Wayanad.</h1>
+        <p>
+          Sign in to plan your journeys, save your favourite places,
+          and make every trip unforgettable.
+        </p>
+      </div>
+      <div class="welcome-footer">Find your own path in the green paradise.</div>
+    </section>
+
+    <section class="form-panel">
+      <div class="form-card">
+        <div class="mobile-logo">▲ WAYANAD GO</div>
+
+        <p class="form-eyebrow">WELCOME BACK</p>
+        <h2>Sign in to your account</h2>
+        <p class="form-description">
+          Enter your details to continue your journey.
+        </p>
+
+        <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              [(ngModel)]="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <div class="password-label">
+              <label for="password">Password</label>
+              <a routerLink="/forgot-password" class="forgot-link">
+                Forgot password?
+              </a>
+            </div>
+
+            <div class="password-input">
+              <input
+                id="password"
+                [type]="showPassword ? 'text' : 'password'"
+                name="password"
+                [(ngModel)]="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                class="show-password"
+                (click)="showPassword = !showPassword"
+                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+              >
+                {{ showPassword ? 'Hide' : 'Show' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="message error-message" role="alert" *ngIf="errorMessage">
+            {{ errorMessage }}
+          </div>
+
+          <div class="message success-message" role="status" *ngIf="successMessage">
+            {{ successMessage }}
+          </div>
+
+          <button class="submit-button" type="submit">
+            Sign in <span>→</span>
+          </button>
+        </form>
+
+        <p class="register-prompt">
+          Don't have an account?
+          <a routerLink="/register">Create account</a>
+        </p>
+
+        <p class="terms-note">
+          By continuing, you agree to our Terms of Service and Privacy Policy.
+        </p>
+      </div>
+    </section>
+  </main>
+</div>

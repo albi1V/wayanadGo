@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="WayanadGo.Api/WayanadGo.Api.csproj" />
+  <Project Path="WayanadGo.Application/WayanadGo.Application.csproj" />
+  <Project Path="WayanadGo.Contracts/WayanadGo.Contracts.csproj" />
+  <Project Path="WayanadGo.Infrastructure/WayanadGo.Infrastructure.csproj" />
+</Solution>
