@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
 
 type RegistrationStage = 'details' | 'otp';
 
@@ -27,18 +27,16 @@ export class Registration implements OnDestroy {
   showPassword = false;
   showConfirmPassword = false;
   loading = false;
+  verified = false;
 
   errorMessage = '';
   successMessage = '';
 
   otpSecondsRemaining = 300;
+  resendSecondsRemaining = 0;
   private countdown?: Subscription;
 
-  private readonly apiUrl = (
-    environment.development.apiUrl
-  ).replace(/\/+$/, '');
-
-  constructor(private http: HttpClient) {}
+  constructor(private auth: AuthService) {}
 
   requestOtp(): void {
     this.errorMessage = '';
@@ -72,19 +70,14 @@ export class Registration implements OnDestroy {
 
     this.loading = true;
 
-    // Planned API contract. The backend must validate all fields,
-    // securely store pending registration data, and send the OTP.
-    this.http.post(`${this.apiUrl}/auth/request-otp`, {
-      fullName: this.fullName.trim(),
-      email: this.email.trim(),
-      password: this.password,
-    }).subscribe({
+    this.auth.requestOtp(this.fullName.trim(), this.email.trim(), this.password).subscribe({
       next: () => {
         this.loading = false;
         this.stage = 'otp';
         this.otp = '';
         this.otpSecondsRemaining = 300;
-        this.successMessage = 'OTP sent. Please check your email.';
+        this.resendSecondsRemaining = 60;
+        this.successMessage = 'If this email can be registered, a verification code will arrive shortly.';
         this.startCountdown();
       },
       error: (error: HttpErrorResponse) => {
@@ -107,13 +100,11 @@ export class Registration implements OnDestroy {
 
     this.loading = true;
 
-    this.http.post(`${this.apiUrl}/auth/verify-otp`, {
-      email: this.email.trim(),
-      otp: this.otp,
-    }).subscribe({
+    this.auth.verifyOtp(this.email.trim(), this.otp).subscribe({
       next: () => {
         this.loading = false;
         this.stopCountdown();
+        this.verified = true;
         this.successMessage =
           'Email verified. We can now continue to the login page.';
       },
@@ -130,14 +121,13 @@ export class Registration implements OnDestroy {
     this.successMessage = '';
     this.loading = true;
 
-    this.http.post(`${this.apiUrl}/auth/resend-otp`, {
-      email: this.email.trim(),
-    }).subscribe({
+    this.auth.resendOtp(this.email.trim()).subscribe({
       next: () => {
         this.loading = false;
         this.otp = '';
         this.otpSecondsRemaining = 300;
-        this.successMessage = 'A new OTP has been requested.';
+        this.resendSecondsRemaining = 60;
+        this.successMessage = 'If a registration is pending, check your email for a new code.';
         this.startCountdown();
       },
       error: (error: HttpErrorResponse) => {
@@ -149,7 +139,6 @@ export class Registration implements OnDestroy {
   }
 
   backToDetails(): void {
-    this.stopCountdown();
     this.stage = 'details';
     this.otp = '';
     this.errorMessage = '';
@@ -168,7 +157,9 @@ export class Registration implements OnDestroy {
     this.countdown = interval(1000).subscribe(() => {
       if (this.otpSecondsRemaining > 0) {
         this.otpSecondsRemaining--;
-      } else {
+      }
+      if (this.resendSecondsRemaining > 0) this.resendSecondsRemaining--;
+      if (this.otpSecondsRemaining === 0 && this.resendSecondsRemaining === 0) {
         this.stopCountdown();
       }
     });

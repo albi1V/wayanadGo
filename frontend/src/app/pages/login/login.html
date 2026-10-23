@@ -42,6 +42,7 @@
               placeholder="you@example.com"
               autocomplete="email"
               required
+              [disabled]="loading"
             />
           </div>
 
@@ -62,12 +63,14 @@
                 placeholder="Enter your password"
                 autocomplete="current-password"
                 required
+                [disabled]="loading"
               />
               <button
                 type="button"
                 class="show-password"
                 (click)="showPassword = !showPassword"
                 [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+                [disabled]="loading"
               >
                 {{ showPassword ? 'Hide' : 'Show' }}
               </button>
@@ -82,7 +85,11 @@
             {{ successMessage }}
           </div>
 
-          <button class="submit-button" type="submit">
+          <div class="message" role="status" *ngIf="loading">
+            Signing in...
+          </div>
+
+          <button class="submit-button" type="submit" [disabled]="loading">
             Sign in <span>→</span>
           </button>
         </form>

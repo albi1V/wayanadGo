@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +18,9 @@ export class Login {
   showPassword = false;
   errorMessage = '';
   successMessage = '';
+  loading = false;
+
+  constructor(private auth: AuthService, private router: Router) {}
 
   onLogin(): void {
     this.errorMessage = '';
@@ -31,7 +36,17 @@ export class Login {
       return;
     }
 
-    // The API connection will be added in the next step.
-    this.successMessage = 'Form validated. Login API is not connected yet.';
+    this.loading = true;
+    this.auth.login(this.email.trim(), this.password).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.auth.setSession(response);
+        void this.router.navigate(['/home']);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading = false;
+        this.errorMessage = error.error?.message ?? 'Sign in failed. Please try again.';
+      },
+    });
   }
 }

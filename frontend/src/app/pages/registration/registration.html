@@ -164,16 +164,17 @@
         <button
           type="submit"
           class="primary-button"
-          [disabled]="loading"
+          [disabled]="loading || resendSecondsRemaining > 0"
         >
-          <span *ngIf="!loading">Create account <span>→</span></span>
+          <span *ngIf="!loading && resendSecondsRemaining === 0">Create account <span>→</span></span>
+          <span *ngIf="!loading && resendSecondsRemaining > 0">Please wait {{ resendSecondsRemaining }}s</span>
           <span *ngIf="loading" class="button-loading">Please wait...</span>
         </button>
       </form>
 
       <!-- OTP verification -->
       <form
-        *ngIf="stage === 'otp'"
+        *ngIf="stage === 'otp' && !verified"
         (ngSubmit)="verifyOtp()"
         class="registration-form"
         novalidate
@@ -221,9 +222,9 @@
           type="button"
           class="text-button"
           (click)="resendOtp()"
-          [disabled]="loading"
+          [disabled]="loading || resendSecondsRemaining > 0"
         >
-          Didn't receive the code? Resend OTP
+          {{ resendSecondsRemaining > 0 ? 'Resend available in ' + resendSecondsRemaining + 's' : "Didn't receive the code? Resend OTP" }}
         </button>
 
         <button
@@ -235,6 +236,10 @@
           ← Back to registration
         </button>
       </form>
+
+      <div *ngIf="stage === 'otp' && verified" class="registration-form">
+        <a routerLink="/login" class="primary-button">Continue to sign in</a>
+      </div>
 
       <div class="form-bottom" *ngIf="stage === 'details'">
         <p>
