@@ -42,18 +42,18 @@
 
       <div class="form-heading">
         <span class="step-label">
-          {{ stage === 'details' ? 'STEP 1 OF 2' : 'STEP 2 OF 2' }}
+          {{ stage() === 'details' ? 'STEP 1 OF 2' : 'STEP 2 OF 2' }}
         </span>
 
         <h2>
-          {{ stage === 'details' ? 'Create your account' : 'Verify your email' }}
+          {{ stage() === 'details' ? 'Create your account' : 'Verify your email' }}
         </h2>
 
-        <p *ngIf="stage === 'details'">
+        <p *ngIf="stage() === 'details'">
           Join Wayanad Go and start planning your next adventure.
         </p>
 
-        <p *ngIf="stage === 'otp'">
+        <p *ngIf="stage() === 'otp'">
           Enter the six-digit OTP sent to
           <strong>{{ email }}</strong>.
         </p>
@@ -72,7 +72,7 @@
 
       <!-- Registration details -->
       <form
-        *ngIf="stage === 'details'"
+        *ngIf="stage() === 'details'"
         (ngSubmit)="requestOtp()"
         class="registration-form"
         novalidate
@@ -88,7 +88,7 @@
             placeholder="Enter your full name"
             autocomplete="name"
             required
-            [disabled]="loading"
+            [disabled]="loading()"
           />
         </div>
 
@@ -103,7 +103,7 @@
             placeholder="you@example.com"
             autocomplete="email"
             required
-            [disabled]="loading"
+            [disabled]="loading()"
           />
         </div>
 
@@ -119,14 +119,14 @@
               placeholder="At least 8 characters"
               autocomplete="new-password"
               required
-              [disabled]="loading"
+              [disabled]="loading()"
             />
 
             <button
               type="button"
               class="password-toggle"
               (click)="showPassword = !showPassword"
-              [disabled]="loading"
+              [disabled]="loading()"
               [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
             >
               {{ showPassword ? 'Hide' : 'Show' }}
@@ -146,14 +146,14 @@
               placeholder="Re-enter your password"
               autocomplete="new-password"
               required
-              [disabled]="loading"
+              [disabled]="loading()"
             />
 
             <button
               type="button"
               class="password-toggle"
               (click)="showConfirmPassword = !showConfirmPassword"
-              [disabled]="loading"
+              [disabled]="loading()"
               [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'"
             >
               {{ showConfirmPassword ? 'Hide' : 'Show' }}
@@ -164,17 +164,17 @@
         <button
           type="submit"
           class="primary-button"
-          [disabled]="loading || resendSecondsRemaining > 0"
+          [disabled]="loading() || resendSecondsRemaining() > 0"
         >
-          <span *ngIf="!loading && resendSecondsRemaining === 0">Create account <span>→</span></span>
-          <span *ngIf="!loading && resendSecondsRemaining > 0">Please wait {{ resendSecondsRemaining }}s</span>
-          <span *ngIf="loading" class="button-loading">Please wait...</span>
+          <span *ngIf="!loading() && resendSecondsRemaining() === 0">Create account <span>→</span></span>
+          <span *ngIf="!loading() && resendSecondsRemaining() > 0">Please wait {{ resendSecondsRemaining() }}s</span>
+          <span *ngIf="loading()" class="button-loading">Please wait...</span>
         </button>
       </form>
 
       <!-- OTP verification -->
       <form
-        *ngIf="stage === 'otp' && !verified"
+        *ngIf="stage() === 'otp' && !verified()"
         (ngSubmit)="verifyOtp()"
         class="registration-form"
         novalidate
@@ -194,17 +194,17 @@
             autocomplete="one-time-code"
             maxlength="6"
             required
-            [disabled]="loading"
+            [disabled]="loading()"
             class="otp-input"
           />
         </div>
 
         <div class="otp-timer">
-          <span *ngIf="otpSecondsRemaining > 0">
+          <span *ngIf="otpSecondsRemaining() > 0">
             Code expires in <strong>{{ formattedTime }}</strong>
           </span>
 
-          <span *ngIf="otpSecondsRemaining === 0" class="expired-text">
+          <span *ngIf="otpSecondsRemaining() === 0" class="expired-text">
             Your OTP may have expired.
           </span>
         </div>
@@ -212,36 +212,36 @@
         <button
           type="submit"
           class="primary-button"
-          [disabled]="loading"
+          [disabled]="loading()"
         >
-          <span *ngIf="!loading">Verify email <span>→</span></span>
-          <span *ngIf="loading" class="button-loading">Verifying...</span>
+          <span *ngIf="!loading()">Verify email <span>→</span></span>
+          <span *ngIf="loading()" class="button-loading">Verifying...</span>
         </button>
 
         <button
           type="button"
           class="text-button"
           (click)="resendOtp()"
-          [disabled]="loading || resendSecondsRemaining > 0"
+          [disabled]="loading() || resendSecondsRemaining() > 0"
         >
-          {{ resendSecondsRemaining > 0 ? 'Resend available in ' + resendSecondsRemaining + 's' : "Didn't receive the code? Resend OTP" }}
+          {{ resendSecondsRemaining() > 0 ? 'Resend available in ' + resendSecondsRemaining() + 's' : "Didn't receive the code? Resend OTP" }}
         </button>
 
         <button
           type="button"
           class="back-button"
           (click)="backToDetails()"
-          [disabled]="loading"
+          [disabled]="loading()"
         >
           ← Back to registration
         </button>
       </form>
 
-      <div *ngIf="stage === 'otp' && verified" class="registration-form">
+      <div *ngIf="stage() === 'otp' && verified()" class="registration-form">
         <a routerLink="/login" class="primary-button">Continue to sign in</a>
       </div>
 
-      <div class="form-bottom" *ngIf="stage === 'details'">
+      <div class="form-bottom" *ngIf="stage() === 'details'">
         <p>
           Already have an account?
           <a routerLink="/login">Log in</a>

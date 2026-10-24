@@ -69,6 +69,30 @@
   color: white;
 }
 
+.logout-button {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid #146044;
+  border-radius: 24px;
+  background: #146044;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background: #0c563b;
+}
+
+.logout-button:focus-visible,
+.profile-button:focus-visible,
+.language-button:focus-visible {
+  outline: 3px solid #91c9a8;
+  outline-offset: 2px;
+}
+
 /* HOME HERO */
 
 .home-hero {
@@ -101,6 +125,15 @@
 .hero-content .eyebrow {
   color: #d1ebd7;
   margin-bottom: 10px;
+}
+
+.hero-content .welcome-message {
+  margin: 0 0 8px;
+  color: #d1ebd7;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.4;
 }
 
 .hero-content h1 {
@@ -423,7 +456,7 @@
   .mini-logo { font-size: 28px; }
   .home-hero { min-height: 245px; }
   .hero-content { padding: 25px 19px; }
-  .hero-content h1 { font-size: 34px; }
+  .hero-content .welcome-message { font-size: 10px; letter-spacing: 0.8px; }
   .hero-content > p:last-child { font-size: 13px; }
   .home-content { width: calc(100% - 28px); }
   .category-grid { gap: 8px; }

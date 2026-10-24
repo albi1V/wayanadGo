@@ -30,8 +30,23 @@ public partial class AddAuthenticationAndDestinationFields : Migration
             ALTER TABLE public.destinations ALTER COLUMN slug SET NOT NULL;
             UPDATE public.destinations SET description = '' WHERE description IS NULL;
             UPDATE public.destinations SET location = '' WHERE location IS NULL;
-            ALTER TABLE public.destinations ALTER COLUMN description SET NOT NULL;
-            ALTER TABLE public.destinations ALTER COLUMN location SET NOT NULL;
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM public.destinations
+                    WHERE char_length(name) > 120
+                       OR char_length(description) > 5000
+                       OR char_length(location) > 160
+                ) THEN
+                    RAISE EXCEPTION 'Destination data exceeds the model column limits; migration stopped without truncating values.';
+                END IF;
+            END $$;
+            ALTER TABLE public.destinations
+                ALTER COLUMN name TYPE character varying(120),
+                ALTER COLUMN description TYPE character varying(5000),
+                ALTER COLUMN location TYPE character varying(160),
+                ALTER COLUMN description SET NOT NULL,
+                ALTER COLUMN location SET NOT NULL;
 
             DO $$
             BEGIN

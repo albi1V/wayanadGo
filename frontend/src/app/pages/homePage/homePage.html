@@ -14,11 +14,15 @@
 
     <div class="header-actions">
       <button class="language-button" type="button">EN</button>
+      @if (auth.isAuthenticated()) {
+        <button class="logout-button" type="button" (click)="logout()">Logout</button>
+      }
       <button
   class="profile-button"
   type="button"
   aria-label="Login or register"
   routerLink="/login"
+  [hidden]="auth.isAuthenticated()"
 >
   ♟
 </button>
@@ -28,6 +32,15 @@
   <section class="home-hero">
     <div class="hero-overlay"></div>
     <div class="hero-content">
+      @if (auth.isAuthenticated()) {
+        <p class="welcome-message">
+          @if (firstName(); as name) {
+            WELCOME BACK, {{ name.toUpperCase() }} 👋
+          } @else {
+            WELCOME BACK 👋
+          }
+        </p>
+      }
       <p class="eyebrow">FIND YOUR NEXT ADVENTURE</p>
       <h1>Where to in<br />Wayanad today?</h1>
       <p>

@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Net.Mail;
@@ -11,6 +13,16 @@ namespace WayanadGo.Api.Controllers;
 [Route("api/auth")]
 public sealed class AuthController(AuthService service, EmailOtpService otpService) : ControllerBase
 {
+    [HttpGet("me"), Authorize]
+    public async Task<IActionResult> CurrentUser(CancellationToken ct)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdClaim, out var userId)) return Unauthorized();
+
+        var user = await service.GetCurrentUserAsync(userId, ct);
+        return user is null ? Unauthorized() : Ok(user);
+    }
+
     [HttpPost("register")]
     public IActionResult Register() => StatusCode(StatusCodes.Status410Gone,
         new { message = "Email verification is required. Start with POST /api/auth/request-otp." });

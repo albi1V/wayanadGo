@@ -14,9 +14,17 @@ public sealed class AuthService(IUserRepository users, ITokenService tokens)
         return CreateResponse(user);
     }
 
+    public async Task<CurrentUserResponse?> GetCurrentUserAsync(int userId, CancellationToken ct)
+    {
+        var user = await users.GetByIdAsync(userId, ct);
+        return user is null
+            ? null
+            : new CurrentUserResponse(user.FullName, user.Email, user.Role);
+    }
+
     private AuthResponse CreateResponse(User user)
     {
         var (token, expires) = tokens.CreateToken(user);
-        return new AuthResponse(token, expires, user.Email, user.Role);
+        return new AuthResponse(token, expires, user.Email, user.Role, user.FullName);
     }
 }

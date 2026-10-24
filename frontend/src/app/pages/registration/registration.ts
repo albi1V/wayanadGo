@@ -1,6 +1,7 @@
+
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
@@ -16,7 +17,7 @@ type RegistrationStage = 'details' | 'otp';
   styleUrl: './registration.css',
 })
 export class Registration implements OnDestroy {
-  stage: RegistrationStage = 'details';
+  stage = signal<RegistrationStage>('details');
 
   fullName = '';
   email = '';
@@ -26,14 +27,15 @@ export class Registration implements OnDestroy {
 
   showPassword = false;
   showConfirmPassword = false;
-  loading = false;
-  verified = false;
+  loading = signal(false);
+  verified = signal(false);
 
   errorMessage = '';
   successMessage = '';
 
-  otpSecondsRemaining = 300;
-  resendSecondsRemaining = 0;
+  otpSecondsRemaining = signal(300);
+  resendSecondsRemaining = signal(0);
+
   private countdown?: Subscription;
 
   constructor(private auth: AuthService) {}
@@ -42,8 +44,12 @@ export class Registration implements OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (!this.fullName.trim() || !this.email.trim() ||
-        !this.password || !this.confirmPassword) {
+    if (
+      !this.fullName.trim() ||
+      !this.email.trim() ||
+      !this.password ||
+      !this.confirmPassword
+    ) {
       this.errorMessage = 'Please complete all fields.';
       return;
     }
@@ -53,6 +59,7 @@ export class Registration implements OnDestroy {
       return;
     }
 
+    // Validate the email address.
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) {
       this.errorMessage = 'Enter a valid email address.';
       return;
@@ -68,25 +75,39 @@ export class Registration implements OnDestroy {
       return;
     }
 
-    this.loading = true;
+    this.loading.set(true);
 
-    this.auth.requestOtp(this.fullName.trim(), this.email.trim(), this.password).subscribe({
-      next: () => {
-        this.loading = false;
-        this.stage = 'otp';
-        this.otp = '';
-        this.otpSecondsRemaining = 300;
-        this.resendSecondsRemaining = 60;
-        this.successMessage = 'If this email can be registered, a verification code will arrive shortly.';
-        this.startCountdown();
-      },
-      error: (error: HttpErrorResponse) => {
-        this.loading = false;
-        this.errorMessage =
-          error.error?.message ??
-          'Could not send the OTP. Please try again.';
-      },
-    });
+    this.auth
+      .requestOtp(
+        this.fullName.trim(),
+        this.email.trim(),
+        this.password
+      )
+      .subscribe({
+        next: () => {
+          this.loading.set(false);
+          this.stage.set('otp');
+          this.otp = '';
+          this.otpSecondsRemaining.set(300);
+          this.resendSecondsRemaining.set(60);
+
+          this.successMessage =
+            'If this email can be registered, a verification code will arrive shortly.';
+
+          this.startCountdown();
+        },
+
+        error: (error: HttpErrorResponse) => {
+          this.loading.set(false);
+          this.errorMessage =
+            error.error?.message ??
+            'Could not send the OTP. Please try again.';
+        },
+
+        complete: () => {
+          this.loading.set(false);
+        },
+      });
   }
 
   verifyOtp(): void {
@@ -98,20 +119,26 @@ export class Registration implements OnDestroy {
       return;
     }
 
-    this.loading = true;
+    this.loading.set(true);
 
     this.auth.verifyOtp(this.email.trim(), this.otp).subscribe({
       next: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.stopCountdown();
-        this.verified = true;
+        this.verified.set(true);
+
         this.successMessage =
-          'Email verified. We can now continue to the login page.';
+          'Email verified. You can now continue to the login page.';
       },
+
       error: (error: HttpErrorResponse) => {
-        this.loading = false;
+        this.loading.set(false);
         this.errorMessage =
           error.error?.message ?? 'OTP verification failed.';
+      },
+
+      complete: () => {
+        this.loading.set(false);
       },
     });
   }
@@ -119,35 +146,45 @@ export class Registration implements OnDestroy {
   resendOtp(): void {
     this.errorMessage = '';
     this.successMessage = '';
-    this.loading = true;
+    this.loading.set(true);
 
     this.auth.resendOtp(this.email.trim()).subscribe({
       next: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.otp = '';
-        this.otpSecondsRemaining = 300;
-        this.resendSecondsRemaining = 60;
-        this.successMessage = 'If a registration is pending, check your email for a new code.';
+        this.otpSecondsRemaining.set(300);
+        this.resendSecondsRemaining.set(60);
+
+        this.successMessage =
+          'If a registration is pending, check your email for a new code.';
+
         this.startCountdown();
       },
+
       error: (error: HttpErrorResponse) => {
-        this.loading = false;
+        this.loading.set(false);
         this.errorMessage =
           error.error?.message ?? 'Could not resend the OTP.';
+      },
+
+      complete: () => {
+        this.loading.set(false);
       },
     });
   }
 
   backToDetails(): void {
-    this.stage = 'details';
+    this.stage.set('details');
     this.otp = '';
     this.errorMessage = '';
     this.successMessage = '';
   }
 
   get formattedTime(): string {
-    const minutes = Math.floor(this.otpSecondsRemaining / 60);
-    const seconds = this.otpSecondsRemaining % 60;
+    const remaining = this.otpSecondsRemaining();
+    const minutes = Math.floor(remaining / 60);
+    const seconds = remaining % 60;
+
     return `${minutes}:${String(seconds).padStart(2, '0')}`;
   }
 
@@ -155,11 +192,18 @@ export class Registration implements OnDestroy {
     this.stopCountdown();
 
     this.countdown = interval(1000).subscribe(() => {
-      if (this.otpSecondsRemaining > 0) {
-        this.otpSecondsRemaining--;
+      if (this.otpSecondsRemaining() > 0) {
+        this.otpSecondsRemaining.update((remaining) => remaining - 1);
       }
-      if (this.resendSecondsRemaining > 0) this.resendSecondsRemaining--;
-      if (this.otpSecondsRemaining === 0 && this.resendSecondsRemaining === 0) {
+
+      if (this.resendSecondsRemaining() > 0) {
+        this.resendSecondsRemaining.update((remaining) => remaining - 1);
+      }
+
+      if (
+        this.otpSecondsRemaining() === 0 &&
+        this.resendSecondsRemaining() === 0
+      ) {
         this.stopCountdown();
       }
     });

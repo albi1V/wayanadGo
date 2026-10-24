@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Net.Mail;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using WayanadGo.Application.Entities;
@@ -9,7 +8,11 @@ using WayanadGo.Infrastructure.Data;
 
 namespace WayanadGo.Api.Services;
 
-public sealed class EmailOtpService(AppDbContext db, IConfiguration configuration, SmtpEmailSender emailSender)
+public sealed class EmailOtpService(
+    AppDbContext db,
+    IConfiguration configuration,
+    SmtpEmailSender emailSender,
+    ILogger<EmailOtpService> logger)
 {
     private static readonly TimeSpan OtpLifetime = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan ResendCooldown = TimeSpan.FromSeconds(60);
@@ -19,10 +22,18 @@ public sealed class EmailOtpService(AppDbContext db, IConfiguration configuratio
     public async Task<OtpRequestOutcome> RequestAsync(RequestOtpRequest request, CancellationToken ct)
     {
         if (request.FullName.Trim().Length < 2) return OtpRequestOutcome.InvalidRegistration;
-        if (!emailSender.IsConfigured) return OtpRequestOutcome.EmailNotConfigured;
+        if (!emailSender.IsConfigured)
+        {
+            logger.LogWarning("OTP request was not sent because email configuration is incomplete or invalid.");
+            return OtpRequestOutcome.EmailNotConfigured;
+        }
 
         var email = NormalizeEmail(request.Email);
-        if (await db.Users.AnyAsync(x => x.Email == email, ct)) return OtpRequestOutcome.Accepted;
+        if (await db.Users.AnyAsync(x => x.Email == email, ct))
+        {
+            logger.LogInformation("OTP request was suppressed because the email is already registered.");
+            return OtpRequestOutcome.Accepted;
+        }
 
         var now = DateTime.UtcNow;
         var pending = await db.PendingRegistrations.SingleOrDefaultAsync(x => x.Email == email, ct);
@@ -33,7 +44,11 @@ public sealed class EmailOtpService(AppDbContext db, IConfiguration configuratio
             pending = null;
         }
         if (pending is not null && now - pending.LastSentAtUtc < ResendCooldown)
+        {
+            logger.LogInformation("OTP request was suppressed by the resend cooldown. RetryAfterSeconds={RetryAfterSeconds}",
+                Math.Ceiling((ResendCooldown - (now - pending.LastSentAtUtc)).TotalSeconds));
             return OtpRequestOutcome.Accepted;
+        }
 
         var otp = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
         if (pending is null)
@@ -54,7 +69,7 @@ public sealed class EmailOtpService(AppDbContext db, IConfiguration configuratio
         {
             await emailSender.SendOtpAsync(email, pending.FullName, otp, ct);
         }
-        catch (SmtpException)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             pending.LastSentAtUtc = now.Subtract(ResendCooldown);
             await db.SaveChangesAsync(CancellationToken.None);
@@ -121,7 +136,11 @@ public sealed class EmailOtpService(AppDbContext db, IConfiguration configuratio
 
     public async Task<OtpRequestOutcome> ResendAsync(string rawEmail, CancellationToken ct)
     {
-        if (!emailSender.IsConfigured) return OtpRequestOutcome.EmailNotConfigured;
+        if (!emailSender.IsConfigured)
+        {
+            logger.LogWarning("OTP resend was not sent because email configuration is incomplete or invalid.");
+            return OtpRequestOutcome.EmailNotConfigured;
+        }
         var email = NormalizeEmail(rawEmail);
         var now = DateTime.UtcNow;
         var pending = await db.PendingRegistrations.SingleOrDefaultAsync(x => x.Email == email, ct);
@@ -129,10 +148,15 @@ public sealed class EmailOtpService(AppDbContext db, IConfiguration configuratio
         {
             db.PendingRegistrations.Remove(pending);
             await db.SaveChangesAsync(ct);
+            logger.LogInformation("OTP resend was suppressed because the pending registration expired.");
             return OtpRequestOutcome.Accepted;
         }
         if (pending is null || now - pending.LastSentAtUtc < ResendCooldown)
+        {
+            logger.LogInformation("OTP resend was suppressed. Reason={Reason}",
+                pending is null ? "NoPendingRegistration" : "Cooldown");
             return OtpRequestOutcome.Accepted;
+        }
 
         var otp = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
         pending.OtpHash = HashOtp(otp);
@@ -144,7 +168,7 @@ public sealed class EmailOtpService(AppDbContext db, IConfiguration configuratio
         {
             await emailSender.SendOtpAsync(email, pending.FullName, otp, ct);
         }
-        catch (SmtpException)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             pending.LastSentAtUtc = now.Subtract(ResendCooldown);
             await db.SaveChangesAsync(CancellationToken.None);

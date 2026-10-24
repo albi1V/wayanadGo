@@ -1,13 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using WayanadGo.Application.Entities;
 
 namespace WayanadGo.Infrastructure.Data;
 
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class AppDbContext : DbContext
 {
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
+
     public DbSet<Destination> Destinations => Set<Destination>();
+
     public DbSet<User> Users => Set<User>();
-    public DbSet<PendingRegistration> PendingRegistrations => Set<PendingRegistration>();
+
+    public DbSet<PendingRegistration> PendingRegistrations
+        => Set<PendingRegistration>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,14 +57,39 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         {
             entity.ToTable("pending_registrations");
             entity.HasKey(x => x.Email);
-            entity.Property(x => x.Email).HasColumnName("email").HasMaxLength(254);
-            entity.Property(x => x.FullName).HasColumnName("full_name").HasMaxLength(160).IsRequired();
-            entity.Property(x => x.PasswordHash).HasColumnName("password_hash").HasMaxLength(200).IsRequired();
-            entity.Property(x => x.OtpHash).HasColumnName("otp_hash").HasMaxLength(64).IsRequired();
-            entity.Property(x => x.ExpiresAtUtc).HasColumnName("expires_at_utc");
-            entity.Property(x => x.LastSentAtUtc).HasColumnName("last_sent_at_utc");
-            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
-            entity.Property(x => x.FailedAttempts).HasColumnName("failed_attempts");
+
+            entity.Property(x => x.Email)
+                .HasColumnName("email")
+                .HasMaxLength(254)
+                .IsRequired();
+
+            entity.Property(x => x.FullName)
+                .HasColumnName("full_name")
+                .HasMaxLength(160)
+                .IsRequired();
+
+            entity.Property(x => x.PasswordHash)
+                .HasColumnName("password_hash")
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(x => x.OtpHash)
+                .HasColumnName("otp_hash")
+                .HasMaxLength(64)
+                .IsRequired();
+
+            entity.Property(x => x.ExpiresAtUtc)
+                .HasColumnName("expires_at_utc");
+
+            entity.Property(x => x.LastSentAtUtc)
+                .HasColumnName("last_sent_at_utc");
+
+            entity.Property(x => x.CreatedAtUtc)
+                .HasColumnName("created_at_utc");
+
+            entity.Property(x => x.FailedAttempts)
+                .HasColumnName("failed_attempts");
+
             entity.HasIndex(x => x.ExpiresAtUtc);
         });
     }
